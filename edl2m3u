@@ -1,0 +1,31 @@
+#!/usr/bin/python3
+import sys
+import subprocess
+source_file = sys.argv[1]
+source_file_base = source_file[:-4]
+
+m3u_file_header = "#EXTM3U\n#EXTINF:"
+m3u_start_base = "#EXTVLCOPT:start-time="
+m3u_stop_base = "#EXTVLCOPT:stop-time="
+
+source_file_duration = subprocess.getoutput(f"printf %.2f $(ffprobe -v quiet -show_entries format=duration {source_file} | grep duration | cut -d'=' -f2)") 
+
+with open(f'{source_file_base}.edl') as edl_file:
+  raw_edl = edl_file.readlines()
+  
+m3u_times = ['0.01']
+for i in raw_edl:
+  times = i.split("\t")
+  for j in times:
+    if "\n" not in j:
+      m3u_times.append(j)
+
+m3u_times.append(source_file_duration)
+
+capacity = len(m3u_times)/2
+with open(source_file_base+".m3u", "w") as m3u_file:
+  m3u_file.write(f"{m3u_file_header}{source_file_duration}\n")
+  while capacity:
+    m3u_file.write(f"{m3u_start_base}{str(m3u_times.pop(0))}\n{m3u_stop_base}{str(m3u_times.pop(0))}\n{source_file}\n")
+    capacity-=1
+
