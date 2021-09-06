@@ -2,7 +2,7 @@
 import sys
 import subprocess
 source_file = sys.argv[1]
-source_file_base = source_file[:-4]
+source_file_base = '.'.join(source_file.split('.')[:-1])
 
 m3u_file_header = "#EXTM3U\n#EXTINF:"
 m3u_start_base = "#EXTVLCOPT:start-time="
